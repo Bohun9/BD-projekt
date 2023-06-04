@@ -1,0 +1,4 @@
+*.vpp.bak*
+*.vpp.lck
+docs.*
+!docs.pdf
