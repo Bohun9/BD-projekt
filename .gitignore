@@ -2,8 +2,8 @@
 *.vpp.lck
 *.fls
 docs.*
-docs.tex
-docs.pdf
+!docs.tex
+!docs.pdf
 
 .venv/
 
