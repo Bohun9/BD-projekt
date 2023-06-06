@@ -1,11 +1,9 @@
-**/*.vpp.bak*
-**/*.vpp.lck
-
-**/*.fls
-
-**/docs.*
-!**/docs.tex
-!**/docs.pdf
+*.vpp.bak*
+*.vpp.lck
+*.fls
+docs.*
+docs.tex
+docs.pdf
 
 .venv/
 
