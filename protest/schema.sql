@@ -99,7 +99,7 @@ BEGIN
     SELECT action_id INTO action FROM Protest WHERE id = NEW.protest_id;
     SELECT * INTO dummy FROM Worldview WHERE action_id = action AND guard_id = NEW.guard_id;
     IF FOUND THEN
-        RETURN NULL; -- should protest against it!
+        RETURN NULL; -- should not approve this action!
     ELSE
         RETURN NEW;
     END IF;
@@ -107,4 +107,23 @@ END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER assert_guard_political_view_when_securing BEFORE INSERT ON Protection
 FOR EACH ROW EXECUTE FUNCTION assert_guard_political_view_when_securing();
+
+CREATE OR REPLACE FUNCTION check_report_submitter() RETURNS trigger AS $$
+DECLARE 
+    dummy RECORD;
+BEGIN
+    SELECT * INTO dummy FROM Participation WHERE member_id = NEW.member_id AND protest_id = NEW.protest_id;
+    -- must participate in protest
+    IF FOUND THEN
+        SELECT * INTO dummy FROM Report WHERE member_id = NEW.member_id AND protest_id = NEW.protest_id;
+        -- at most 1 report to the protest
+        if FOUND THEN
+            RETURN NEW;
+        END IF;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER report_submitter_must_participate_in_protest BEFORE INSERT ON Report
+FOR EACH ROW EXECUTE FUNCTION report_submitter_must_participate_in_protest();
 
