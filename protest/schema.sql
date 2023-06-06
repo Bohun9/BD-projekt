@@ -44,7 +44,7 @@ CREATE TABLE Report(
     member_id INTEGER REFERENCES OrganizationMember(id),
     protest_id INTEGER REFERENCES Protest(id),
     rating INTEGER NOT NULL CHECK (1 <= rating AND rating <= 10),
-    description VARCHAR(1024)
+    description VARCHAR(1024) CHECK (char_length(description) > 0)
 );
 
 CREATE TABLE Guard(
@@ -65,4 +65,46 @@ CREATE TABLE Worldview(
     guard_id INTEGER REFERENCES Guard(id),
     action_id INTEGER REFERENCES Protest(id)
 );
+
+
+-- for searching protests on rectangles or by distance to the point
+CREATE INDEX protests_on_the_plane ON Protest USING gist(coordinates);
+
+
+CREATE OR REPLACE FUNCTION fill_protest_organizer() RETURNS trigger AS $$
+BEGIN
+    SELECT organizer_id INTO NEW.organizer_id FROM GovernmentAction WHERE id = NEW.action_id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER fill_protest_organizer BEFORE INSERT OR UPDATE ON Protest
+FOR EACH ROW EXECUTE FUNCTION fill_protest_organizer();
+
+
+CREATE OR REPLACE FUNCTION add_organizer_as_participant() RETURNS trigger AS $$
+BEGIN
+    INSERT INTO Participation(member_id, protest_id) VALUES (NEW.member_id, NEW.id);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER add_organizer_as_participant AFTER INSERT ON Protest
+FOR EACH ROW EXECUTE FUNCTION add_organizer_as_participant();
+
+
+CREATE OR REPLACE FUNCTION assert_guard_political_view_when_securing() RETURNS trigger AS $$
+DECLARE 
+    dummy RECORD;
+    action INTEGER;
+BEGIN
+    SELECT action_id INTO action FROM Protest WHERE id = NEW.protest_id;
+    SELECT * INTO dummy FROM Worldview WHERE action_id = action AND guard_id = NEW.guard_id;
+    IF FOUND THEN
+        RETURN NULL; -- should protest against it!
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER assert_guard_political_view_when_securing BEFORE INSERT ON Protection
+FOR EACH ROW EXECUTE FUNCTION assert_guard_political_view_when_securing();
 
