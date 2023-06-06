@@ -124,6 +124,6 @@ BEGIN
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER report_submitter_must_participate_in_protest BEFORE INSERT ON Report
-FOR EACH ROW EXECUTE FUNCTION report_submitter_must_participate_in_protest();
+CREATE TRIGGER check_report_submitter BEFORE INSERT ON Report
+FOR EACH ROW EXECUTE FUNCTION check_report_submitter();
 
