@@ -117,7 +117,7 @@ BEGIN
     IF FOUND THEN
         SELECT * INTO dummy FROM Report WHERE member_id = NEW.member_id AND protest_id = NEW.protest_id;
         -- at most 1 report to the protest
-        if FOUND THEN
+        if NOT FOUND THEN
             RETURN NEW;
         END IF;
     END IF;
