@@ -108,6 +108,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER assert_guard_political_view_when_securing BEFORE INSERT ON Protection
 FOR EACH ROW EXECUTE FUNCTION assert_guard_political_view_when_securing();
 
+
 CREATE OR REPLACE FUNCTION check_report_submitter() RETURNS trigger AS $$
 DECLARE 
     dummy RECORD;
