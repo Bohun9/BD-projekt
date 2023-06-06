@@ -1,0 +1,146 @@
+% Preamble
+\documentclass{article}
+
+% Packages
+\usepackage{listings}
+\lstset{language={[LaTeX]TeX}}
+
+% Polish
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% Macros
+\newcommand{\hf}[1]{\frac{#1}{2}}
+
+% Content of document
+\begin{document}
+\newgeometry{left=2cm,right=2cm, bottom=1.5cm, top=1.5cm}
+
+% Top matter
+\title{System do organizacji protestów}
+\author{Marcin Martowicz}
+\date{}
+\maketitle
+
+% Table of Contents (Toc)
+\tableofcontents
+
+\section{Model konceptualny}
+\subsection{Diagram ER}
+\includegraphics[width=500px]{Conceptual Model.png}
+
+\subsection{Role}
+\subsubsection{Activist}
+\begin{itemize}
+    \item{bierze udział w protestach}
+    \item{składa sprawozdania z protestów}
+    \item{za zasługi może awansować na pozycję organizatora}
+\end{itemize}
+\subsubsection{Organizer}
+\begin{itemize}
+    \item{przypisuje sobie rządowe akcje do obserwacji}
+    \item{planuje protesty na temat akcji, do których jest przydzielony}
+    \item{rejestruje ochroniarzy do systemu, sprawdzając poglądy polityczne wykrywaczem kłamstw}
+    \item{wybiera ochroniarzy do swoich protestów}
+    \item{może uczestniczyć w protestach jako aktywista}
+\end{itemize}
+\subsubsection{Guard}
+\begin{itemize}
+    \item{pilnuje porządku w czasie protestów}
+    \item{na wstępie przechodzi test o poglądach politycznych}
+    \item{zatrudnienie załatwia u organizatorów innym kanałem komunikacyjnym}
+\end{itemize}
+
+\subsection{Więzy}
+\subsubsection{OrganizationMember}
+\begin{itemize}
+    \item{każdy członek musi być pełnoletni}
+    \item{loginy muszą być unikalne}
+    \item{hasło musi być niepuste}
+\end{itemize}
+\subsubsection{Participation}
+\begin{itemize}
+    \item{organizator musi uczestniczyć w swoim proteście}
+\end{itemize}
+\subsubsection{Report}
+\begin{itemize}
+    \item{ocena protestu musi być liczbą od $1$ do $10$}
+    \item{treść sprawozdania musi być niepusta}
+\end{itemize}
+\subsubsection{Protest}
+\begin{itemize}
+    \item{musi być przynajmniej jeden boombox}
+\end{itemize}
+\subsubsection{GovernmentAction}
+\begin{itemize}
+    \item{tytuły akcji rządowych muszą być unikalne i niepuste}
+\end{itemize}
+\subsubsection{Guard}
+\begin{itemize}
+    \item{jeśli ochrania jakiś protest to musi popierać dany postulat}
+    \item{musi umieć biegać z prędkością co najmniej $20$km/h}
+    \item{musi ważyć co najmniej $80$kg}
+\end{itemize}
+
+\section{Model fizyczny}
+Znajduje się w pliku create.sql.
+
+\section{Obiecanka}
+Zrobię aplikację w pythonie używając frameworku flask. Nie planuję zajmować się frontendem.
+
+% that's not very pretty
+% \section{API}
+% \subsection{Dodawanie}
+% \begin{description}
+%     \item \textbf{register\_member}    [password] [name] [last\_name] [age] \\
+%         Rejestracja nowego członka.
+%     \item \textbf{register\_organizer} [password] [name] [last\_name] [age] [secret] \\
+%         Rejestracja nowego organizatora.
+%     \item \textbf{login} [password] \\
+%         Logowanie użytkownika.
+%     \item \textbf{observe\_action} [action\_name] \\
+%         Przypisanie sobie akcji do obserwacji.
+%     \item \textbf{create\_protest} [action\_id] [start\_time] [town] [geo\_coordinate] [boombox\_number] \\
+%         Stworzenie protestu.
+%     \item \textbf{participation} [protest\_id] [member\_id] \\
+%         Zapisanie członka do protestu.
+%     \item \textbf{report} [protest\_id] [protest\_id] [rating] [description] \\
+%         Złożenie sprawozdania.
+%     \item \textbf{guard} [name] [last\_name] [weight] [running\_speed] \\
+%         Wprowadzenie ochroniarza do systemu.
+%     \item \textbf{protection} [guard\_id] [protest\_id] \\
+%         Zatrudnienie ochroniarza do protestu.
+% \end{description}
+% \subsection{Zapytania}
+% \begin{description}
+%     \item \textbf{participants} [protest\_id] \\
+%         Zwraca członków zapisanych na protest.
+%     \item \textbf{actions} [limit] \\
+%         Zwraca do [limit] akcji wraz z ilością przypisanych protestów. Posortowane po ilości protestów.
+%     \item \textbf{participants\_stats} [limit] \\
+%         Zwraca do [limit] członków wraz z ilością protestów, w których brali udział, liczbą ich sprawozdań i sumaryczną długością sprawozdań. Posortowane malejąco po długości.
+%     \item \textbf{organizer\_stats} [limit] \\
+%         Zwraca do [limit] organizatorów wraz z ilością przypisanych protestów i średnią oceną ze sprawozdań. Posortowane malejąco po ocenie.
+%     \item \textbf{find\_protest} [point] [start\_time] [end\_time] [limit] \\
+%         Zwraca do [limit] protestów, które odbywają się w danym przedziale czasowym. Posortowane po dystansie do podanego punktu.
+%     \item \textbf{most\_profitable\_protests} [guard\_id] [start\_time] [end\_time] [limit] \\
+%         Zwraca do [limit] protestów, które odbywają się w danym przedziale czasowym i dany ochroniarz nie jest do nich przypisany. Posortowane po liczbie boomboxów, które przypadną mu do ochrony (ochroniarze dzielą się po równo).
+%     \item \textbf{indirect\_friends} [member\_id] \\
+%         Po wspólnym proteście wszyscy członkowie zostają kolegami. Zapytanie zwraca bezpośrednich i pośrednich znajomych danego członka.
+% \end{description}
+
+% \section{Uruchomienie}
+% Nadanie obecnemu użytkownikowi prawa do tworzenia bazy danych.
+% \begin{lstlisting}[language=Bash]
+% sudo su postgres
+% psql -c 'ALTER ROLE <uzytownik> with CREATEDB;'
+% \end{lstlisting}
+
+\end{document}
+% Typesetting is off
+
