@@ -27,6 +27,10 @@ def login(client, login="login", password="password"):
     )
 
 
+def logout(client):
+    client.get("/logout")
+
+
 def test_register_member(app, client):
     response = register(client)
     assert "200" in response.status
@@ -47,8 +51,18 @@ def test_login(client):
         assert g.user is None
         response = login(client)
         assert g.user is not None
-        response = client.get("/logout")
+        logout(client)
         assert "200" in response.status
         assert "user_id" not in session
         response = login(client, login="bad_login")
         assert "401" in response.status
+
+
+def test_add_action(client):
+    register(client)
+    login(client)
+    response = client.post("/add/action", data={"title": "zwiekszamy podatki"})
+    assert "200" in response.status
+    logout(client)
+    response = client.post("/add/action", data={"title": "zwiekszamy podatki"})
+    assert "401" in response.status

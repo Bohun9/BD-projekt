@@ -20,8 +20,10 @@ def create_app(test_config=None):
 
     from . import db
     from . import api_auth
+    from . import api_add
 
     db.init_app(app)
     app.register_blueprint(api_auth.bp)
+    app.register_blueprint(api_add.bp)
 
     return app
