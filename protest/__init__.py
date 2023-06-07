@@ -6,7 +6,9 @@ from flask import Flask
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     # can read config from toml file to possilby automate creation of db
-    app.config.from_mapping(SECRET_KEY="dev", DATABASE="baza_main")
+    app.config.from_mapping(
+        SECRET_KEY="dev", DATABASE="baza_main", SECRET_ORGANIZER="org"
+    )
     app.config.from_mapping(test_config)
 
     # if database had password it should be in instance directory
