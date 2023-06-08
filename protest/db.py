@@ -52,7 +52,7 @@ def add_row_to_table(name, content):
         get_cursor().execute(
             sql.SQL("INSERT INTO {}({}) VALUES %s").format(
                 sql.Identifier(name),
-                sql.SQL(", ").join(map(lambda x: sql.Identifier(x), field_names)),
+                sql.SQL(", ").join(map(sql.Identifier, field_names)),
             ),
             (field_values,),
         )

@@ -8,7 +8,7 @@ bp = Blueprint("query", __name__, url_prefix="/query")
 
 # by default row converted to json is list of values, even when cursor factory is specified
 def with_names(table):
-    return list(map(lambda x: dict(x), table))
+    return list(map(dict, table))
 
 
 @bp.route("/participants/<int:id>", methods=("GET",))
