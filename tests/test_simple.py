@@ -3,34 +3,6 @@ from protest.db import get_table
 from flask import session, g
 
 
-def register(client):
-    return client.post(
-        "/register_member",
-        data={
-            "name": "Bob",
-            "last_name": "Smith",
-            "age": 50,
-            "login": "login",
-            "password": "password",
-            "secret": "org",
-        },
-    )
-
-
-def login(client, login="login", password="password"):
-    return client.post(
-        "/login",
-        data={
-            "login": login,
-            "password": password,
-        },
-    )
-
-
-def logout(client):
-    client.get("/logout")
-
-
 def test_register_member(app, auth):
     response = auth.register()
     assert "200" in response.status
@@ -58,10 +30,6 @@ def test_login(client, auth):
         assert "401" in response.status
 
 
-def add_action(client):
-    return client.post("/add/action", data={"title": "zwiekszamy podatki"})
-
-
 def test_add_action(auth, add):
     auth.register()
     auth.login()
@@ -70,20 +38,6 @@ def test_add_action(auth, add):
     auth.logout()
     response = add.action()
     assert "401" in response.status
-
-
-def add_protest(client):
-    return client.post(
-        "/add/protest",
-        data={
-            "action_id": 1,
-            "start_time": "2011-11-04T00:05:23",
-            "town": "Wroclaw",
-            "coordinate_x": 1,
-            "coordinate_y": 1,
-            "boombox_number": 5,
-        },
-    )
 
 
 def test_add_protest(app, auth, add):
