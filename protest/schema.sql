@@ -84,7 +84,7 @@ FOR EACH ROW EXECUTE FUNCTION fill_protest_organizer();
 
 CREATE OR REPLACE FUNCTION add_organizer_as_participant() RETURNS trigger AS $$
 BEGIN
-    INSERT INTO Participation(member_id, protest_id) VALUES (NEW.member_id, NEW.id);
+    INSERT INTO "Participation"(member_id, protest_id) VALUES (NEW.organizer_id, NEW.id);
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;

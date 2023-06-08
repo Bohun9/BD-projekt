@@ -58,11 +58,53 @@ def test_login(client):
         assert "401" in response.status
 
 
+def add_action(client):
+    return client.post("/add/action", data={"title": "zwiekszamy podatki"})
+
+
 def test_add_action(client):
     register(client)
     login(client)
-    response = client.post("/add/action", data={"title": "zwiekszamy podatki"})
+    response = add_action(client)
     assert "200" in response.status
     logout(client)
     response = client.post("/add/action", data={"title": "zwiekszamy podatki"})
     assert "401" in response.status
+
+
+def test_add_protest(app, client):
+    register(client)
+    login(client)
+    add_action(client)
+    response = client.post(
+        "/add/protest",
+        data={
+            "action_id": 1,
+            "start_time": "2011-11-04T00:05:23",
+            "town": "Wroclaw",
+            "coordinate_x": 1,
+            "coordinate_y": 1,
+            "boombox_number": 5,
+        },
+    )
+    assert "200" in response.status
+    with app.app_context():
+        assert len(get_table("Protest")) == 1
+
+    response = client.post(
+        "/add/participation",
+        data={
+            "protest_id": 1,
+        },
+    )
+    assert "200" in response.status
+
+    response = client.post(
+        "/add/report",
+        data={
+            "protest_id": 1,
+            "rating": 10,
+            "description": "good stuff",
+        },
+    )
+    assert "200" in response.status
