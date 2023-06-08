@@ -31,8 +31,8 @@ def logout(client):
     client.get("/logout")
 
 
-def test_register_member(app, client):
-    response = register(client)
+def test_register_member(app, auth):
+    response = auth.register()
     assert "200" in response.status
     with app.app_context():
         members = get_table("OrganizationMember")
@@ -42,19 +42,19 @@ def test_register_member(app, client):
         assert bob["organizer_privilege"] == True
 
 
-def test_login(client):
-    register(client)
+def test_login(client, auth):
+    auth.register()
     with client:
-        response = login(client)
+        response = auth.login()
         assert "200" in response.status
         assert session["user_id"] == 1
         assert g.user is None
-        response = login(client)
+        response = auth.login()
         assert g.user is not None
-        logout(client)
+        response = auth.logout()
         assert "200" in response.status
         assert "user_id" not in session
-        response = login(client, login="bad_login")
+        response = auth.login(login="bad_login")
         assert "401" in response.status
 
 
@@ -62,13 +62,13 @@ def add_action(client):
     return client.post("/add/action", data={"title": "zwiekszamy podatki"})
 
 
-def test_add_action(client):
-    register(client)
-    login(client)
-    response = add_action(client)
+def test_add_action(auth, add):
+    auth.register()
+    auth.login()
+    response = add.action()
     assert "200" in response.status
-    logout(client)
-    response = client.post("/add/action", data={"title": "zwiekszamy podatki"})
+    auth.logout()
+    response = add.action()
     assert "401" in response.status
 
 
@@ -86,64 +86,38 @@ def add_protest(client):
     )
 
 
-def test_add_protest(app, client):
-    register(client)
-    login(client)
-    add_action(client)
-    response = add_protest(client)
+def test_add_protest(app, auth, add):
+    auth.register()
+    auth.login()
+    add.action()
+    response = add.protest()
     assert "200" in response.status
     with app.app_context():
         assert len(get_table("Protest")) == 1
 
-    response = client.post(
-        "/add/participation",
-        data={
-            "protest_id": 1,
-        },
-    )
+    response = add.participation()
     assert "200" in response.status
 
-    response = client.post(
-        "/add/report",
-        data={
-            "protest_id": 1,
-            "rating": 10,
-            "description": "good stuff",
-        },
-    )
+    response = add.report()
     assert "200" in response.status
 
 
-def test_add_guard(app, client):
-    register(client)
-    login(client)
-    add_action(client)
-    add_protest(client)
-    response = client.post(
-        "/add/guard",
-        data={
-            "name": "Tom",
-            "last_name": "Smith",
-            "weight": 100,
-            "running_speed": 21,
-        },
-    )
+def test_add_guard(auth, add):
+    auth.register()
+    auth.login()
+    add.action()
+    add.protest()
+    response = add.guard()
     assert "200" in response.status
-    response = client.post(
-        "/add/protection",
-        data={
-            "guard_id": 1,
-            "protest_id": 1,
-        },
-    )
+    response = add.protection()
     assert "200" in response.status
 
 
-def test_query_participants(client):
-    register(client)
-    login(client)
-    add_action(client)
-    add_protest(client)
-    response = client.get("/query/participants/1")
+def test_query_participants(auth, add, query):
+    auth.register()
+    auth.login()
+    add.action()
+    add.protest()
+    response = query.participants(1)
     assert "200" in response.status
     assert response.json[0]["name"] == "Bob"
