@@ -72,11 +72,8 @@ def test_add_action(client):
     assert "401" in response.status
 
 
-def test_add_protest(app, client):
-    register(client)
-    login(client)
-    add_action(client)
-    response = client.post(
+def add_protest(client):
+    return client.post(
         "/add/protest",
         data={
             "action_id": 1,
@@ -87,6 +84,13 @@ def test_add_protest(app, client):
             "boombox_number": 5,
         },
     )
+
+
+def test_add_protest(app, client):
+    register(client)
+    login(client)
+    add_action(client)
+    response = add_protest(client)
     assert "200" in response.status
     with app.app_context():
         assert len(get_table("Protest")) == 1
@@ -105,6 +109,31 @@ def test_add_protest(app, client):
             "protest_id": 1,
             "rating": 10,
             "description": "good stuff",
+        },
+    )
+    assert "200" in response.status
+
+
+def test_add_guard(app, client):
+    register(client)
+    login(client)
+    add_action(client)
+    add_protest(client)
+    response = client.post(
+        "/add/guard",
+        data={
+            "name": "Tom",
+            "last_name": "Smith",
+            "weight": 100,
+            "running_speed": 21,
+        },
+    )
+    assert "200" in response.status
+    response = client.post(
+        "/add/protection",
+        data={
+            "guard_id": 1,
+            "protest_id": 1,
         },
     )
     assert "200" in response.status

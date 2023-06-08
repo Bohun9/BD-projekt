@@ -81,7 +81,7 @@ def add_guard():
         {
             "name": request.form["name"],
             "last_name": request.form["last_name"],
-            "added_by": g.user["user_id"],
+            "added_by": g.user["id"],
             "weight": request.form["weight"],
             "running_speed": request.form["running_speed"],
         },
@@ -110,6 +110,9 @@ def add_worldview():
 def add_protection():
     add_row_to_table(
         "Protection",
-        {"guard_id": request.form["guard_id"], "protest": g.user["protest"]},
+        {
+            "guard_id": request.form["guard_id"],
+            "protest_id": request.form["protest_id"],
+        },
     )
     return "OK"
