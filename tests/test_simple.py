@@ -137,3 +137,13 @@ def test_add_guard(app, client):
         },
     )
     assert "200" in response.status
+
+
+def test_query_participants(client):
+    register(client)
+    login(client)
+    add_action(client)
+    add_protest(client)
+    response = client.get("/query/participants/1")
+    assert "200" in response.status
+    assert response.json[0]["name"] == "Bob"

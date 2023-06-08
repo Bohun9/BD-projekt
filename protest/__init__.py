@@ -21,9 +21,11 @@ def create_app(test_config=None):
     from . import db
     from . import api_auth
     from . import api_add
+    from . import api_query
 
     db.init_app(app)
     app.register_blueprint(api_auth.bp)
     app.register_blueprint(api_add.bp)
+    app.register_blueprint(api_query.bp)
 
     return app

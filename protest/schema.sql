@@ -74,7 +74,7 @@ CREATE INDEX protests_on_the_plane ON "Protest" USING gist(coordinates);
 
 CREATE OR REPLACE FUNCTION fill_protest_organizer() RETURNS trigger AS $$
 BEGIN
-    SELECT organizer_id INTO NEW.organizer_id FROM GovernmentAction WHERE id = NEW.action_id;
+    SELECT observer_id INTO NEW.organizer_id FROM "GovernmentAction" WHERE id = NEW.action_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -129,3 +129,17 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER check_report_submitter BEFORE INSERT ON "Report"
 FOR EACH ROW EXECUTE FUNCTION check_report_submitter();
 
+
+
+------------------------------------
+------------ FUNCTIONS -------------
+------------------------------------
+
+
+CREATE OR REPLACE FUNCTION query_participants(protest INTEGER) RETURNS TABLE(id INTEGER, name VARCHAR(255), last_name VARCHAR(255), age INTEGER) AS $$
+BEGIN
+    RETURN QUERY SELECT M.id, M.name, M.last_name, M.age
+    FROM "OrganizationMember" M JOIN (SELECT * FROM "Participation" WHERE protest_id = protest) AS P
+    ON M.id = P.member_id;
+END;
+$$ LANGUAGE plpgsql;
