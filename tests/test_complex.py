@@ -15,9 +15,27 @@ def add_data(auth, add):
     auth.login(login="B")
     add.action(title="B")
 
-    add.protest(action_id=1)
-    add.protest(action_id=1)
-    add.protest(action_id=2)
+    add.protest(
+        action_id=1,
+        start_time="2011-11-04T05:00:00",
+        end_time="2011-11-04T06:00:00",
+        coordinate_x=0,
+        coordinate_y=0,
+    )
+    add.protest(
+        action_id=1,
+        start_time="2011-11-04T07:00:00",
+        end_time="2011-11-04T08:00:00",
+        coordinate_x=5,
+        coordinate_y=0,
+    )
+    add.protest(
+        action_id=2,
+        start_time="2011-11-04T04:00:00",
+        end_time="2011-11-04T10:00:00",
+        coordinate_x=10,
+        coordinate_y=0,
+    )
 
     auth.login("B")
     add.participation(protest_id=1)
@@ -82,3 +100,22 @@ def test_query_organizer_stats(auth, add, query):
     assert (
         decimal.Decimal(organizers[1]["avg_rating"]) - decimal.Decimal("1.0")
     ) < 0.0001
+
+
+def test_query_closest_protests(auth, add, query):
+    add_data(auth, add)
+    response = query.closest_protests(
+        0, 0, "2011-11-04T03:00:00", "2011-11-04T11:00:00"
+    )
+    assert "200" in response.status
+    assert response.json == [{"id": 1}, {"id": 2}, {"id": 3}]
+    response = query.closest_protests(
+        10, 0, "2011-11-04T03:00:00", "2011-11-04T11:00:00"
+    )
+    assert "200" in response.status
+    assert response.json == [{"id": 3}, {"id": 2}, {"id": 1}]
+    response = query.closest_protests(
+        10, 0, "2011-11-04T05:00:00", "2011-11-04T07:00:00"
+    )
+    assert "200" in response.status
+    assert response.json == [{"id": 1}]

@@ -27,6 +27,7 @@ def add_protest():
         {
             "action_id": request.form["action_id"],
             "start_time": datetime.fromisoformat(request.form["start_time"]),
+            "end_time": datetime.fromisoformat(request.form["end_time"]),
             "town": request.form["town"],
             "coordinates": str(
                 (

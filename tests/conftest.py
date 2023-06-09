@@ -59,6 +59,7 @@ class AddActions:
         self,
         action_id=1,
         start_time="2011-11-04T00:05:23",
+        end_time="2011-11-04T00:05:23",
         town="Wroclaw",
         coordinate_x=0,
         coordinate_y=0,
@@ -69,6 +70,7 @@ class AddActions:
             data={
                 "action_id": action_id,
                 "start_time": start_time,
+                "end_time": end_time,
                 "town": town,
                 "coordinate_x": coordinate_x,
                 "coordinate_y": coordinate_y,
@@ -126,6 +128,17 @@ class QueryActions:
 
     def organizer_stats(self):
         return self.client.get(f"/query/organizer_stats")
+
+    def closest_protests(self, coordinate_x, coordinate_y, start_time, end_time):
+        return self.client.get(
+            f"/query/closest_protests",
+            query_string={
+                "coordinate_x": coordinate_x,
+                "coordinate_y": coordinate_y,
+                "start_time": start_time,
+                "end_time": end_time,
+            },
+        )
 
 
 @pytest.fixture

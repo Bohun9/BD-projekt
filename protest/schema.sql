@@ -31,6 +31,7 @@ CREATE TABLE "Protest"(
     organizer_id INTEGER REFERENCES "OrganizationMember"(id),
     action_id INTEGER REFERENCES "GovernmentAction"(id),
     start_time TIMESTAMP,
+    end_time TIMESTAMP,
     town VARCHAR(255),
     coordinates POINT,
     boombox_number INTEGER NOT NULL CHECK (boombox_number > 0)
@@ -208,6 +209,17 @@ BEGIN
     WHERE "OrganizationMember".organizer_privilege = True
     GROUP BY "OrganizationMember".id
     ORDER BY 4 DESC, 2 ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+DROP FUNCTION IF EXISTS query_closest_protests(POINT, TIMESTAMP, TIMESTAMP);
+CREATE OR REPLACE FUNCTION query_closest_protests(p POINT, s TIMESTAMP, e TIMESTAMP) RETURNS TABLE(id INTEGER) AS $$
+BEGIN
+    RETURN QUERY SELECT sq.id FROM (SELECT * FROM "Protest"
+        WHERE s <= "Protest".start_time AND "Protest".end_time <= e
+        ORDER BY "Protest".coordinates <-> p
+    ) as sq;
 END;
 $$ LANGUAGE plpgsql;
 

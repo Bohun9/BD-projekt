@@ -1,5 +1,6 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from .db import get_cursor, get_table, log_db_notifications
+from datetime import datetime
 
 bp = Blueprint("query", __name__, url_prefix="/query")
 
@@ -42,5 +43,27 @@ def query_organizer_stats():
     print("WHAT", get_table("Report"))
     get_cursor().execute("SELECT * FROM query_organizer_stats();")
     log_db_notifications()
+    result = get_cursor().fetchall()
+    return with_names(result)
+
+
+@bp.route("/closest_protests", methods=("GET",))
+def query_closest_protests():
+    # print("WHAT", get_table("Report"))
+    print(request.args)
+    get_cursor().execute(
+        "SELECT * FROM query_closest_protests(%s, %s, %s);",
+        (
+            str(
+                (
+                    float(request.args["coordinate_x"]),
+                    float(request.args["coordinate_y"]),
+                )
+            ),
+            request.args.get("start_time", type=datetime.fromisoformat),
+            request.args.get("end_time", type=datetime.fromisoformat),
+        ),
+    )
+    # log_db_notifications()
     result = get_cursor().fetchall()
     return with_names(result)
