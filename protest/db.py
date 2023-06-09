@@ -65,3 +65,11 @@ def get_table(name):
     cur = get_cursor()
     cur.execute(sql.SQL("SELECT * FROM {};").format(sql.Identifier(name)))
     return cur.fetchall()
+
+
+def log_db_notifications():
+    assert "connection" in g
+    print("db notifications:")
+    for note in g.connection.notices:
+        print(note)
+    print()

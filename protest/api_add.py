@@ -59,9 +59,11 @@ def add_participation():
 )
 @must_be_member
 def add_report():
+    print("add report")
     add_row_to_table(
         "Report",
         {
+            "member_id": g.user["id"],
             "protest_id": request.form["protest_id"],
             "rating": request.form["rating"],
             "description": request.form["description"],

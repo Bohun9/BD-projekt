@@ -118,6 +118,15 @@ class QueryActions:
     def participants(self, protest_id):
         return self.client.get(f"/query/participants/{protest_id}")
 
+    def action_stats(self):
+        return self.client.get(f"/query/action_stats")
+
+    def participant_stats(self):
+        return self.client.get(f"/query/participant_stats")
+
+    def organizer_stats(self):
+        return self.client.get(f"/query/organizer_stats")
+
 
 @pytest.fixture
 def auth(client):

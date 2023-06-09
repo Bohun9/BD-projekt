@@ -1,5 +1,5 @@
 from flask import Blueprint
-from .db import get_cursor, get_table
+from .db import get_cursor, get_table, log_db_notifications
 
 bp = Blueprint("query", __name__, url_prefix="/query")
 
@@ -17,5 +17,30 @@ def query_participants(id):
     # print(get_table("Participation"))
     # print(get_table("Protest"))
     get_cursor().execute("SELECT * FROM query_participants(%s);", (id,))
+    result = get_cursor().fetchall()
+    return with_names(result)
+
+
+@bp.route("/action_stats", methods=("GET",))
+def query_action_stats():
+    get_cursor().execute("SELECT * FROM query_action_stats();")
+    result = get_cursor().fetchall()
+    return with_names(result)
+
+
+@bp.route("/participant_stats", methods=("GET",))
+def query_participant_stats():
+    print("WHAT", get_table("Report"))
+    get_cursor().execute("SELECT * FROM query_participant_stats();")
+    log_db_notifications()
+    result = get_cursor().fetchall()
+    return with_names(result)
+
+
+@bp.route("/organizer_stats", methods=("GET",))
+def query_organizer_stats():
+    print("WHAT", get_table("Report"))
+    get_cursor().execute("SELECT * FROM query_organizer_stats();")
+    log_db_notifications()
     result = get_cursor().fetchall()
     return with_names(result)

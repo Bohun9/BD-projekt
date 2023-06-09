@@ -97,8 +97,8 @@ DECLARE
     dummy RECORD;
     action INTEGER;
 BEGIN
-    SELECT action_id INTO action FROM Protest WHERE id = NEW.protest_id;
-    SELECT * INTO dummy FROM Worldview WHERE action_id = action AND guard_id = NEW.guard_id;
+    SELECT action_id INTO action FROM "Protest" WHERE id = NEW.protest_id;
+    SELECT * INTO dummy FROM "Worldview" WHERE action_id = action AND guard_id = NEW.guard_id;
     IF FOUND THEN
         RETURN NULL; -- should not approve this action!
     ELSE
@@ -114,10 +114,10 @@ CREATE OR REPLACE FUNCTION check_report_submitter() RETURNS trigger AS $$
 DECLARE 
     dummy RECORD;
 BEGIN
-    SELECT * INTO dummy FROM Participation WHERE member_id = NEW.member_id AND protest_id = NEW.protest_id;
+    SELECT * INTO dummy FROM "Participation" WHERE member_id = NEW.member_id AND protest_id = NEW.protest_id;
     -- must participate in protest
     IF FOUND THEN
-        SELECT * INTO dummy FROM Report WHERE member_id = NEW.member_id AND protest_id = NEW.protest_id;
+        SELECT * INTO dummy FROM "Report" WHERE member_id = NEW.member_id AND protest_id = NEW.protest_id;
         -- at most 1 report to the protest
         if NOT FOUND THEN
             RETURN NEW;
@@ -143,3 +143,72 @@ BEGIN
     ON M.id = P.member_id;
 END;
 $$ LANGUAGE plpgsql;
+
+
+/* DROP FUNCTION query_action_stats(); */
+CREATE OR REPLACE FUNCTION query_action_stats() RETURNS TABLE(id INTEGER, title VARCHAR(255), no_protest BIGINT, no_people BIGINT) AS $$
+BEGIN
+    RETURN QUERY SELECT "GovernmentAction".id, "GovernmentAction".title, COUNT(DISTINCT "Protest".id), COUNT(DiSTINCT "Participation".member_id)
+    FROM ("GovernmentAction" JOIN "Protest" ON ("Protest".action_id = "GovernmentAction".id)) JOIN "Participation" ON ("Protest".id = "Participation".protest_id)
+    GROUP BY "GovernmentAction".id
+    ORDER BY 3 DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+DROP FUNCTION IF EXISTS add_int_string();
+CREATE OR REPLACE FUNCTION add_int_string(i BIGINT, s VARCHAR(1023)) RETURNS BIGINT AS $$
+BEGIN
+    RETURN i + char_length(s);
+END;
+$$ LANGUAGE plpgsql;
+
+DROP AGGREGATE IF EXISTS sum_string_length(VARCHAR(1023));
+CREATE OR REPLACE AGGREGATE sum_string_length (VARCHAR(1023)) (
+    sfunc = add_int_string,
+    stype = BIGINT,
+    initcond = 0
+);
+
+DROP FUNCTION IF EXISTS query_participant_stats();
+CREATE OR REPLACE FUNCTION query_participant_stats() RETURNS TABLE(id INTEGER, name VARCHAR(255), no_protest BIGINT, all_report_length BIGINT) AS $$
+BEGIN
+    RETURN QUERY SELECT p.id, p.name, p.no_protest, r.sum_report_length
+    FROM (SELECT "OrganizationMember".id, "OrganizationMember".name, COUNT("Participation".protest_id) AS no_protest
+        FROM "OrganizationMember" LEFT JOIN "Participation" ON ("Participation".member_id = "OrganizationMember".id)
+        GROUP BY "OrganizationMember".id
+    ) AS p JOIN (SELECT "OrganizationMember".id, "OrganizationMember".name, COALESCE(sum_string_length("Report".description), 0) AS sum_report_length
+        FROM "OrganizationMember" LEFT JOIN "Report" ON ("Report".member_id = "OrganizationMember".id)
+        GROUP BY "OrganizationMember".id
+    ) AS r ON (p.id = r.id)
+    ORDER BY 4 DESC, 2 ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+/* CREATE OR REPLACE FUNCTION query_participant_stats() RETURNS TABLE(id INTEGER, name VARCHAR(255), no_protest BIGINT) AS $$ */
+/* 1 */
+/* RETURN QUERY SELECT p.id, p.name, p.no_protest */
+/* FROM (SELECT "OrganizationMember".id, "OrganizationMember".name, COUNT(*) AS no_protest */
+/*         FROM "OrganizationMember" JOIN "Participation" ON "Participation".member_id = "OrganizationMember".id */
+/*         GROUP BY "OrganizationMember".id */
+/*     ) as p; */
+
+/* 2 */
+/* CREATE OR REPLACE FUNCTION query_participant_stats() RETURNS TABLE(id INTEGER, name VARCHAR(255)) AS $$ */
+/* RETURN QUERY SELECT "OrganizationMember".id, "OrganizationMember".name */
+/*     FROM "OrganizationMember" JOIN "Report" ON ("Report".member_id = "OrganizationMember".id) */
+/*     GROUP BY "OrganizationMember".id; */
+
+
+DROP FUNCTION IF EXISTS query_organizer_stats();
+CREATE OR REPLACE FUNCTION query_organizer_stats() RETURNS TABLE(id INTEGER, name VARCHAR(255), no_protest BIGINT, avg_rating DECIMAL) AS $$
+BEGIN
+    RETURN QUERY SELECT "OrganizationMember".id, "OrganizationMember".name, COUNT(DISTINCT "Protest".id), COALESCE(AVG("Report".rating), 1.0)
+    FROM "OrganizationMember" LEFT JOIN "Protest" ON ("OrganizationMember".id = "Protest".organizer_id) LEFT JOIN "Report" ON ("Protest".id = "Report".protest_id)
+    WHERE "OrganizationMember".organizer_privilege = True
+    GROUP BY "OrganizationMember".id
+    ORDER BY 4 DESC, 2 ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
