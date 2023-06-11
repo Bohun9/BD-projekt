@@ -140,6 +140,22 @@ class QueryActions:
             },
         )
 
+    def profitable_protests(self, guard_id, start_time, end_time):
+        return self.client.get(
+            f"/query/profitable_protests",
+            query_string={
+                "guard_id": guard_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            },
+        )
+
+    def indirect_friends(self, member_id):
+        return self.client.get(
+            f"/query/indirect_friends",
+            query_string={"member_id": member_id},
+        )
+
 
 @pytest.fixture
 def auth(client):

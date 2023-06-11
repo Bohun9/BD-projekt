@@ -67,3 +67,33 @@ def query_closest_protests():
     # log_db_notifications()
     result = get_cursor().fetchall()
     return with_names(result)
+
+
+@bp.route("/profitable_protests", methods=("GET",))
+def query_profitable_protests():
+    # print("WHAT", get_table("Report"))
+    print(request.args)
+    get_cursor().execute(
+        "SELECT * FROM query_profitable_protests(%s, %s, %s);",
+        (
+            request.args.get("guard_id"),
+            request.args.get("start_time", type=datetime.fromisoformat),
+            request.args.get("end_time", type=datetime.fromisoformat),
+        ),
+    )
+    # log_db_notifications()
+    result = get_cursor().fetchall()
+    return with_names(result)
+
+
+@bp.route("/indirect_friends", methods=("GET",))
+def query_indirect_friends():
+    # print("WHAT", get_table("Report"))
+    print(request.args)
+    get_cursor().execute(
+        "SELECT * FROM query_indirect_friends(%s);",
+        (request.args.get("member_id"),),
+    )
+    # log_db_notifications()
+    result = get_cursor().fetchall()
+    return with_names(result)

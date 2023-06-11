@@ -224,3 +224,35 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+DROP FUNCTION IF EXISTS query_profitable_protests(INTEGER, TIMESTAMP, TIMESTAMP);
+CREATE OR REPLACE FUNCTION query_profitable_protests(g INTEGER, s TIMESTAMP, e TIMESTAMP) RETURNS TABLE(id INTEGER, no_boombox INTEGER, no_guard BIGINT, profit FLOAT) AS $$
+BEGIN
+    RETURN QUERY SELECT p.id, p.boombox_number AS bc, COUNT("Protection".guard_id) AS gc, p.boombox_number::FLOAT / (COUNT("Protection".guard_id) + 1)
+    FROM (SELECT * FROM "Protest"
+        WHERE s <= "Protest".start_time AND "Protest".end_time <= e
+        AND NOT EXISTS(SELECT * FROM "Protection"
+            WHERE "Protection".protest_id = "Protest".id AND "Protection".guard_id = g)) AS p
+    LEFT JOIN "Protection" ON (p.id = "Protection".protest_id)
+    GROUP BY p.id, p.boombox_number
+    ORDER BY 4 DESC, 1 ASC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+DROP FUNCTION IF EXISTS query_indirect_friends(INTEGER);
+CREATE OR REPLACE FUNCTION query_indirect_friends(u INTEGER) RETURNS TABLE(id INTEGER) AS $$
+BEGIN
+    RETURN QUERY
+        WITH RECURSIVE friends(id) AS (
+            VALUES (u)
+            UNION
+            SELECT e.id2
+            FROM friends JOIN (SELECT p1.member_id AS id1, p2.member_id AS id2 FROM "Participation" p1 JOIN "Participation" p2 ON (p1.protest_id = p2.protest_id)) AS e
+            ON (friends.id = e.id1)
+        )
+        SELECT * FROM friends
+        ORDER BY 1;
+END;
+$$ LANGUAGE plpgsql;
+
+

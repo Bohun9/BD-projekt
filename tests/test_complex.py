@@ -21,6 +21,7 @@ def add_data(auth, add):
         end_time="2011-11-04T06:00:00",
         coordinate_x=0,
         coordinate_y=0,
+        boombox_number=4,
     )
     add.protest(
         action_id=1,
@@ -28,6 +29,7 @@ def add_data(auth, add):
         end_time="2011-11-04T08:00:00",
         coordinate_x=5,
         coordinate_y=0,
+        boombox_number=3,
     )
     add.protest(
         action_id=2,
@@ -35,6 +37,7 @@ def add_data(auth, add):
         end_time="2011-11-04T10:00:00",
         coordinate_x=10,
         coordinate_y=0,
+        boombox_number=2,
     )
 
     auth.login("B")
@@ -48,6 +51,10 @@ def add_data(auth, add):
     add.report(protest_id=2, description="CCC", rating=6)
     auth.login("B")
     add.report(protest_id=1, description="b", rating=7)
+
+    add.guard()
+    add.guard()
+    add.protection(protest_id=1, guard_id=1)
 
 
 def test_query_action_stats(auth, add, query):
@@ -119,3 +126,36 @@ def test_query_closest_protests(auth, add, query):
     )
     assert "200" in response.status
     assert response.json == [{"id": 1}]
+
+
+def test_query_profitable_protests(auth, add, query):
+    add_data(auth, add)
+    response = query.profitable_protests(
+        2, "2011-11-04T03:00:00", "2011-11-04T11:00:00"
+    )
+    assert "200" in response.status
+    protests = response.json
+    assert len(protests) == 3
+    assert protests[0]["id"] == 2
+    assert protests[1]["id"] == 1
+    assert protests[2]["id"] == 3
+    response = query.profitable_protests(
+        1, "2011-11-04T03:00:00", "2011-11-04T11:00:00"
+    )
+    assert "200" in response.status
+    protests = response.json
+    assert len(protests) == 2
+    assert protests[0]["id"] == 2
+    assert protests[1]["id"] == 3
+
+
+def test_query_indirect_friends(auth, add, query):
+    add_data(auth, add)
+    response = query.indirect_friends(1)
+    assert response.json == [{"id": 1}, {"id": 2}, {"id": 3}]
+    response = query.indirect_friends(2)
+    assert response.json == [{"id": 1}, {"id": 2}, {"id": 3}]
+    response = query.indirect_friends(3)
+    assert response.json == [{"id": 1}, {"id": 2}, {"id": 3}]
+    response = query.indirect_friends(4)
+    assert response.json == [{"id": 4}]
