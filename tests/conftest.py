@@ -5,7 +5,7 @@ from protest.db import init_db, get_cursor
 
 @pytest.fixture
 def app():
-    app = create_app({"TESTING": True, "DATABASE": "baza_test"})
+    app = create_app({"TESTING": True, "DATABASE": "protest_organization_test"})
     with app.app_context():  # get app config to get db name
         init_db()
     yield app

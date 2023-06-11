@@ -1,11 +1,8 @@
-% Preamble
 \documentclass{article}
 
-% Packages
 \usepackage{listings}
 \lstset{language={[LaTeX]TeX}}
 
-% Polish
 \usepackage[T1]{fontenc}
 \usepackage[polish]{babel}
 \usepackage[utf8]{inputenc}
@@ -14,20 +11,16 @@
 \usepackage{xcolor}
 \usepackage{listings}
 
-% Macros
 \newcommand{\hf}[1]{\frac{#1}{2}}
 
-% Content of document
 \begin{document}
 \newgeometry{left=2cm,right=2cm, bottom=1.5cm, top=1.5cm}
 
-% Top matter
 \title{System do organizacji protestów}
 \author{Marcin Martowicz}
 \date{}
 \maketitle
 
-% Table of Contents (Toc)
 \tableofcontents
 
 \section{Model konceptualny}
@@ -116,28 +109,36 @@ Znajduje się w pliku \texttt{protest/schema.sql}.
     \item \texttt{add\_protection} \texttt{[guard\_id]} \texttt{[protest\_id]} \\
         Zatrudnienie ochroniarza do protestu.
 \end{description}
+
 \subsection{Zapytania}
 \begin{description}
     \item \texttt{participants} \texttt{[protest\_id]} \\
         Zwraca członków zapisanych na protest.
-    \item \texttt{actions\_stats} \texttt{[limit]} \\
+    \item \texttt{actions\_stats} \\
         Zwraca akcje wraz z ilością przypisanych protestów i sumaryczną liczbą różnych osób zaangażowanych w protesty. Posortowane po ilości protestów.
-    \item \texttt{participants\_stats} \texttt{[limit]} \\
+    \item \texttt{participants\_stats} \\
         Zwraca członków wraz z ilością protestów, w których brali udział, liczbą ich sprawozdań i sumaryczną długością sprawozdań. Posortowane malejąco po długości.
-    \item \texttt{organizer\_stats} \texttt{[limit]} \\
+    \item \texttt{organizer\_stats} \\
         Zwraca organizatorów wraz z ilością przypisanych protestów i średnią oceną ze sprawozdań. Posortowane malejąco po ocenie.
-    \item \texttt{find\_closest\_protests} \texttt{[point]} \texttt{[start\_time]} \texttt{[end\_time]} \texttt{[limit]} \\
+    \item \texttt{find\_closest\_protests} \texttt{[point]} \texttt{[start\_time]} \texttt{[end\_time]} \\
         Zwraca protesty, które odbywają się w danym przedziale czasowym. Posortowane po dystansie do podanego punktu.
-    \item \texttt{find\_profitable\_protests} \texttt{[guard\_id]} \texttt{[start\_time]} \texttt{[end\_time]} \texttt{[limit]} \\
+    \item \texttt{find\_profitable\_protests} \texttt{[guard\_id]} \texttt{[start\_time]} \texttt{[end\_time]} \\
         Zwraca protesty, które odbywają się w danym przedziale czasowym i dany ochroniarz nie jest do nich przypisany. Posortowane po liczbie boomboxów, które przypadną mu do ochrony (ochroniarze dzielą się po równo).
     \item \texttt{indirect\_friends} \texttt{[member\_id]} \\
         Po wspólnym proteście wszyscy członkowie zostają kolegami. Zapytanie zwraca bezpośrednich i pośrednich znajomych danego członka.
 \end{description}
 
-\section{Obiecanka}
-Użyję języka \texttt{python} i frameworku \texttt{flask}. Aplikacja będzie odpowiadała na żądania HTTP surowym jsonem bez frontendu.
-API powinno być mniej więcej takie jak wyżej.
+\section{Uruchomienie}
+\subsection{Nadanie uprawnień użytkownikowi}
+\texttt{sudo su postgres} \\
+\texttt{psql -c 'ALTER USER <nazwa> CREATEDB;'}
+\subsection{Stworzenie baz danych}
+\texttt{psql -c 'CREATE DATABASE protest\_organization\_main'} \\
+\texttt{psql -c 'CREATE DATABASE protest\_organization\_test'}
+\subsection{Uruchomienie testów}
+\texttt{PYTHONPATH=. pytest}
+\subsection{Uruchomienie aplikacji}
+\texttt{flask -{}-app protest -{}-debug run -{}-port <port>}
 
 \end{document}
-% Typesetting is off
 

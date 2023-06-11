@@ -157,14 +157,12 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-DROP FUNCTION IF EXISTS add_int_string();
 CREATE OR REPLACE FUNCTION add_int_string(i BIGINT, s VARCHAR(1023)) RETURNS BIGINT AS $$
 BEGIN
     RETURN i + char_length(s);
 END;
 $$ LANGUAGE plpgsql;
 
-DROP AGGREGATE IF EXISTS sum_string_length(VARCHAR(1023));
 CREATE OR REPLACE AGGREGATE sum_string_length (VARCHAR(1023)) (
     sfunc = add_int_string,
     stype = BIGINT,
@@ -186,22 +184,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-/* CREATE OR REPLACE FUNCTION query_participant_stats() RETURNS TABLE(id INTEGER, name VARCHAR(255), no_protest BIGINT) AS $$ */
-/* 1 */
-/* RETURN QUERY SELECT p.id, p.name, p.no_protest */
-/* FROM (SELECT "OrganizationMember".id, "OrganizationMember".name, COUNT(*) AS no_protest */
-/*         FROM "OrganizationMember" JOIN "Participation" ON "Participation".member_id = "OrganizationMember".id */
-/*         GROUP BY "OrganizationMember".id */
-/*     ) as p; */
 
-/* 2 */
-/* CREATE OR REPLACE FUNCTION query_participant_stats() RETURNS TABLE(id INTEGER, name VARCHAR(255)) AS $$ */
-/* RETURN QUERY SELECT "OrganizationMember".id, "OrganizationMember".name */
-/*     FROM "OrganizationMember" JOIN "Report" ON ("Report".member_id = "OrganizationMember".id) */
-/*     GROUP BY "OrganizationMember".id; */
-
-
-DROP FUNCTION IF EXISTS query_organizer_stats();
 CREATE OR REPLACE FUNCTION query_organizer_stats() RETURNS TABLE(id INTEGER, name VARCHAR(255), no_protest BIGINT, avg_rating DECIMAL) AS $$
 BEGIN
     RETURN QUERY SELECT "OrganizationMember".id, "OrganizationMember".name, COUNT(DISTINCT "Protest".id), COALESCE(AVG("Report".rating), 1.0)
@@ -213,7 +196,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-DROP FUNCTION IF EXISTS query_closest_protests(POINT, TIMESTAMP, TIMESTAMP);
 CREATE OR REPLACE FUNCTION query_closest_protests(p POINT, s TIMESTAMP, e TIMESTAMP) RETURNS TABLE(id INTEGER) AS $$
 BEGIN
     RETURN QUERY SELECT sq.id FROM (SELECT * FROM "Protest"
@@ -224,7 +206,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-DROP FUNCTION IF EXISTS query_profitable_protests(INTEGER, TIMESTAMP, TIMESTAMP);
 CREATE OR REPLACE FUNCTION query_profitable_protests(g INTEGER, s TIMESTAMP, e TIMESTAMP) RETURNS TABLE(id INTEGER, no_boombox INTEGER, no_guard BIGINT, profit FLOAT) AS $$
 BEGIN
     RETURN QUERY SELECT p.id, p.boombox_number AS bc, COUNT("Protection".guard_id) AS gc, p.boombox_number::FLOAT / (COUNT("Protection".guard_id) + 1)
@@ -239,7 +220,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-DROP FUNCTION IF EXISTS query_indirect_friends(INTEGER);
 CREATE OR REPLACE FUNCTION query_indirect_friends(u INTEGER) RETURNS TABLE(id INTEGER) AS $$
 BEGIN
     RETURN QUERY
